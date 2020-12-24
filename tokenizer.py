@@ -17,7 +17,7 @@ class Tokenizer:
 
     def split_dot(self, text: str) -> str:
         # TODO: Здесь нужно написать паттерн разделения точки от заглавных букв
-        _text = re.sub(r"([.])([А-Я]|[A-Z])", r"\1 \2", text)
+        _text = re.sub(r"([.])([А-ЯЁ]|[A-Z])", r"\1 \2", text)
         return _text
 
     def split_with_tokenizer(self, text):
@@ -25,13 +25,15 @@ class Tokenizer:
         return tokens
 
     def get_concat_rules(self):
-        prev_word_patterns = '|'.join(('з\.', 'двухф\.', 'отриц\.'))
+        prev_word_patterns = '|'.join(('з\.', 'двухф\.', 'отриц\.','ИБС\.$','ТФН\$',
+                                       'ассоцир\.$','стац\.$','вир\.$','H\.$',
+                                       'п\.к\.$','хрон\.$'))
         # TODO: здесь надо написать паттерны для предыдущего предложения
-        concat_rules_prev = (r".*?[?!.](?=\s*[A-ZА-Я])")
+        concat_rules_prev = ()
 
         begin_exceptions = '|'.join(('Tbc', 'Твс', '[\-–]'))
         # TODO: здесь надо написать паттерны соединения последющего предложения
-        concat_rules_post = (r"[-].*(?=\s*)")
+        concat_rules_post = ()
 
         return concat_rules_prev, concat_rules_post
 
@@ -62,15 +64,15 @@ class Tokenizer:
 
     def get_split_rules(self):
         # TODO: здесь нужно написать паттерны разделения предложений
-        split_rules = (r"\S.*?[?!.](?=\s*(?:[A-ZА-Я]|$))")
-        split_rules = '|'.join(split_rules)
+        split_rules = (r"\S.*?[?!.](?=\s+(?:[A-ZА-Я]|$))\n")
+    #    split_rules = '|'.join(split_rules)
         return split_rules
 
     def split_after_concatization(self, tokens):
         split_rules = self.get_split_rules()
         _tokens = chain.from_iterable([re.split(fr"{split_rules}", token)
                                        for token in tokens])
-        _tokens = list(filter(None, tokens))
+        _tokens = list(filter(None, _tokens))
         return _tokens
 
     def tokenize(self, text: str) -> Iterator[str]:
@@ -82,7 +84,18 @@ class Tokenizer:
 
 
 if __name__ == "__main__":
-    text = """ """
+    text = """Жалобы на  давящие, сжимающие боли за грудиной усиливающиеся в ходьбе до 150 м ,которые купируютя покоем или приемом нитроспрея в течение 12мин., перебои  в  работе сердца,
+     повышение АД до 180/100 мм ртст с диффузной гол.болью при опт АД 130\80 мм рт мт.Ухудшение самочувствия  в течение 3 мес - усилились жалобы со стороны сердца., снижение ТФН,
+      нестабильность АД, малая эффективность амб.терапии. Не обследовалась. Амб принимает эналапил. Клиника ИБС около 3-ех лет, Гипертония около 5-ти лет.
+
+Наследственность  отягощена по ИБС  Перенесенные заболевания:- МКБ, ДОА коленных суставов.
+
+Аллергологический анамнез: Аллергия нет
+Эпидемиологический анамнез: В контакте с инфекционным больным не был. Туберкулез, вирусный гепатит, венерические болезни отрицает.   Диарея: нет.
+Онкологический анамнез: Онкологические заболевания отрицает.
+Гемотрансфузионный анамнез: Гемотрасфузии отрицает.
+Акушерский анамнез: Менопауза
+Наследственный анамнез: Наследственность не отягощена"""
     tokenizer = Tokenizer()
     result = tokenizer.tokenize(text)
     print(result)
